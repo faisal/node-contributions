@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+set -e
+
+LIBUV_FIRST_REF=node-v0.9.0
+LIBUV_LAST_REF=HEAD
+
+BASEDIR=$PWD
+
+echo Node.js contribution data as of $(date)
+
+echo
+
+if [ -d libuv ]
+then
+  rm -rf libuv
+fi
+git clone https://github.com/joyent/libuv.git
+cd libuv
+git filter-branch -f --index-filter "git rm -rf --cached --ignore-unmatch include/uv-private/tree.h include/uv-private/stdint-msvc2008.h include/uv-private/pthread-fixes.h src/unix/pthread-fixes.c" --remove-empty  -- --all
+
+echo libuv patches:
+echo
+
+echo Lines changed or added before Jan 14, 2012
+git log --all --oneline --shortstat --before=2012-01-14 | grep " insertion" | awk '{print $4}' | paste -sd+ - | bc
+
+echo Lines changed or added since Jan 1, 2013
+git log --all --oneline --shortstat --after=2012-12-31 | grep " insertion" | awk '{print $4}' | paste -sd+ - | bc
